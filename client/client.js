@@ -15,7 +15,7 @@ function orderDonuts(order){
   order.activate()
   render(order)
   console.log("order")
-  $.ajax('/order', {
+  $.ajax('./order', {
     data: JSON.stringify({
       donuts: order.items(),
     }),
@@ -35,7 +35,7 @@ function pollStatus(order){
   }
   setTimeout(function(){
     console.log("status");
-    $.ajax('/status', {
+    $.ajax('./status', {
       data: JSON.stringify({
         order_id: order.orderID(),
       }),
@@ -43,7 +43,7 @@ function pollStatus(order){
       success: function(order_status) {
         console.log(order_status);
         order.setStatus(JSON.parse(order_status));
-        
+
         if(!order.isDelivered()) {
           render(order);
           pollStatus(order);
