@@ -51,3 +51,10 @@ spec:
             port: 10001
           initialDelaySeconds: 30
           timeoutSeconds: 1
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: tracing-config
