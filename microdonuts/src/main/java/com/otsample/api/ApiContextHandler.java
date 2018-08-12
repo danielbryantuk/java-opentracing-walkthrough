@@ -1,29 +1,27 @@
 package com.otsample.api;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Properties;
-import java.util.UUID;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.otsample.api.resources.DonutRequest;
+import com.otsample.api.resources.StatusReq;
+import com.otsample.api.resources.StatusRes;
+import io.opentracing.Scope;
+import io.opentracing.SpanContext;
+import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMap;
+import io.opentracing.propagation.TextMapExtractAdapter;
+import io.opentracing.util.GlobalTracer;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.otsample.api.KitchenConsumer;
-import com.otsample.api.Utils;
-import com.otsample.api.resources.DonutRequest;
-import com.otsample.api.resources.StatusReq;
-import com.otsample.api.resources.StatusRes;
-
-import io.opentracing.Scope;
-import io.opentracing.util.GlobalTracer;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class ApiContextHandler extends ServletContextHandler
 {
@@ -48,16 +46,22 @@ public class ApiContextHandler extends ServletContextHandler
     {
         KitchenConsumer kitchenConsumer;
 
-        public OrderServlet(KitchenConsumer kitchenConsumer)
-        {
+        public OrderServlet(KitchenConsumer kitchenConsumer) {
             this.kitchenConsumer = kitchenConsumer;
         }
 
         @Override
         public void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
+                throws ServletException, IOException
         {
-            try (Scope orderSpanScope = GlobalTracer.get().buildSpan("order_span").startActive(true)) {
+            TextMap headersTextMap = new TextMapExtractAdapter(getHeadersInfo(request));
+            SpanContext parentSpanCtx = GlobalTracer.get().extract(Format.Builtin.HTTP_HEADERS, headersTextMap);
+
+            try (Scope orderSpanScope = GlobalTracer.get()
+                    .buildSpan("order_span")
+                    .asChildOf(parentSpanCtx)
+                    .startActive(true)) {
+
                 request.setAttribute("span", orderSpanScope.span());
 
                 DonutRequest[] donutsInfo = parseDonutsInfo(request);
@@ -88,7 +92,7 @@ public class ApiContextHandler extends ServletContextHandler
         }
 
         static DonutRequest[] parseDonutsInfo(HttpServletRequest request)
-            throws IOException
+                throws IOException
         {
             JsonObject jsonObj = Utils.readJSONObject(request);
             JsonArray donuts = jsonObj.getAsJsonArray("donuts");
@@ -114,14 +118,13 @@ public class ApiContextHandler extends ServletContextHandler
     {
         KitchenConsumer kitchenConsumer;
 
-        public StatusServlet(KitchenConsumer kitchenConsumer)
-        {
+        public StatusServlet(KitchenConsumer kitchenConsumer) {
             this.kitchenConsumer = kitchenConsumer;
         }
 
         @Override
         public void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
+                throws ServletException, IOException
         {
             StatusReq statusReq = (StatusReq) Utils.readJSON(request, StatusReq.class);
             if (statusReq == null) {
@@ -138,29 +141,28 @@ public class ApiContextHandler extends ServletContextHandler
     {
         Properties config;
 
-        public ConfigServlet(Properties config)
-        {
+        public ConfigServlet(Properties config) {
             this.config = config;
         }
 
         @Override
         public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
+                throws ServletException, IOException
         {
             PrintWriter writer = response.getWriter();
             writer.println(createConfigBody());
             writer.close();
         }
 
-        String createConfigBody ()
+        String createConfigBody()
         {
             String body = ""
-                + "var Config = {"
-                + "    tracer: \"%s\","
-                + "    tracer_host: \"%s\","
-                + "    tracer_port: %s,"
-                + "    tracer_access_token: \"%s\","
-                + "}";
+                    + "var Config = {"
+                    + "    tracer: \"%s\","
+                    + "    tracer_host: \"%s\","
+                    + "    tracer_port: %s,"
+                    + "    tracer_access_token: \"%s\","
+                    + "}";
 
             return String.format(body,
                     config.getProperty("tracer"),
@@ -168,5 +170,19 @@ public class ApiContextHandler extends ServletContextHandler
                     config.getProperty("tracer_port"),
                     config.getProperty("tracer_access_token"));
         }
+    }
+
+    private static Map<String, String> getHeadersInfo(HttpServletRequest request)
+    {
+        Map<String, String> map = new HashMap<>();
+
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = headerNames.nextElement();
+            String value = request.getHeader(key);
+            map.put(key, value);
+        }
+
+        return map;
     }
 }
