@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Properties;
 
+import io.jaegertracing.internal.samplers.ConstSampler;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -20,7 +21,6 @@ import io.jaegertracing.Configuration;
 import io.jaegertracing.Configuration.ReporterConfiguration;
 import io.jaegertracing.Configuration.SamplerConfiguration;
 import io.jaegertracing.Configuration.SenderConfiguration;
-import io.jaegertracing.samplers.ConstSampler;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
 import zipkin2.Span;
