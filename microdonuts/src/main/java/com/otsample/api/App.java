@@ -30,6 +30,8 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 
 public class App
 {
+    private static final String HTTP = "http";
+
     public static void main( String[] args )
         throws Exception
     {
@@ -103,6 +105,7 @@ public class App
             Options opts = new Options.OptionsBuilder()
                 .withAccessToken(config.getProperty("lightstep.access_token"))
                 .withCollectorHost(config.getProperty("lightstep.collector_host"))
+                .withCollectorProtocol(HTTP)
                 .withCollectorPort(Integer.decode(config.getProperty("lightstep.collector_port")))
                 .withComponentName(componentName)
                 .build();
