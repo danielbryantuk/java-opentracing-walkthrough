@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
       - name: microdonut
-        image: danielbryantuk/microdonut:1.3
+        image: danielbryantuk/microdonut:1.5
         imagePullPolicy: Always
         ports:
         - containerPort: 10001

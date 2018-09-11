@@ -20,6 +20,8 @@ data:
         zipkin.reporter_port=9411
 
         // LightStep config
-        lightstep.collector_host=collector.lightstep.com
-        lightstep.collector_port=80
+        lightstep.collector_host=collector-http.lightstep.com
+        // The collector_protocol value can either be "http" or "https"
+        lightstep.collector_protocol=http
+        lightstep.collector_port=8081
         lightstep.access_token={your_token}
