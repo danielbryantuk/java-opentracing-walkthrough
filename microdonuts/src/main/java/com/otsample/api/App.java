@@ -105,7 +105,7 @@ public class App
             Options opts = new Options.OptionsBuilder()
                 .withAccessToken(config.getProperty("lightstep.access_token"))
                 .withCollectorHost(config.getProperty("lightstep.collector_host"))
-                .withCollectorProtocol(HTTP)
+                .withCollectorProtocol(config.getProperty("lightstep.collector_protocol"))
                 .withCollectorPort(Integer.decode(config.getProperty("lightstep.collector_port")))
                 .withComponentName(componentName)
                 .build();
