@@ -24,4 +24,4 @@ data:
         // The collector_protocol value can either be "http" or "https"
         lightstep.collector_protocol=http
         lightstep.collector_port=8081
-        lightstep.access_token=aa1610cd0690c19e579ac961033ff3f6
+        lightstep.access_token={your_token}
