@@ -1,0 +1,8 @@
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+    name: lightstep-config
+data:
+    lightstep_api_key.txt: 

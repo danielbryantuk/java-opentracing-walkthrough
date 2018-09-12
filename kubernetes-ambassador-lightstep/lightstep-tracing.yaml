@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lightstep
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind: TracingService
+      name: tracing
+      service: "collector-http.lightstep.com:8081"
+      driver: lightstep
+      config: {
+          access_token_file: /config/lightstep_api_key.txt
+      }
+spec:
+  type: ExternalName
+  externalName: collector-http.lightstep.com
